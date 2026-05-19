@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Calculator</title>
+  <meta name="description" content="A comprehensive loan calculator for estimating monthly loan payments, interest, and total repayment." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9; --color-surface-offset: #edeae5; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #67645d; --color-text-faint: #908d86; --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #cedcd8;
+      --shadow-sm: 0 1px 2px rgba(40,37,29,.06); --shadow-md: 0 10px 30px rgba(40,37,29,.08);
+      --radius-sm: .5rem; --radius-md: .875rem; --radius-lg: 1.25rem; --radius-full: 9999px;
+      --transition-interactive: 180ms cubic-bezier(0.16,1,0.3,1);
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #22211f; --color-border: #393836; --color-divider: #262523;
+      --color-text: #cdccca; --color-text-muted: #a9a7a2; --color-text-faint: #7a7772; --color-primary: #4f98a3; --color-primary-hover: #6eb6c1; --color-primary-highlight: #313b3b;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.2); --shadow-md: 0 12px 32px rgba(0,0,0,.35);
+    }
+    *,*::before,*::after{box-sizing:border-box} html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth} body{margin:0;min-height:100vh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;color:var(--color-text);background:radial-gradient(circle at top right,color-mix(in srgb,var(--color-primary) 12%,transparent),transparent 28%),linear-gradient(180deg,var(--color-bg),var(--color-surface))} button,input{font:inherit} button{cursor:pointer} a{color:inherit} :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px}
+    .app-shell{width:min(1120px,calc(100% - 2rem));margin:0 auto;padding:var(--space-6) 0 var(--space-10)} .topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-8)}
+    .brand{display:inline-flex;align-items:center;gap:var(--space-3);text-decoration:none;font-size:var(--text-sm);font-weight:700;letter-spacing:.02em}.brand-mark{width:2.5rem;height:2.5rem;padding:.5rem;border-radius:var(--radius-md);background:linear-gradient(135deg,var(--color-primary-highlight),color-mix(in srgb,var(--color-primary) 18%,var(--color-surface-2)));color:var(--color-primary);box-shadow:var(--shadow-sm)}
+    .theme-toggle{inline-size:2.75rem;block-size:2.75rem;border:1px solid color-mix(in srgb,var(--color-text) 12%,transparent);border-radius:var(--radius-full);background:var(--color-surface-2);display:inline-grid;place-items:center;transition:transform var(--transition-interactive),background var(--transition-interactive),border-color var(--transition-interactive)}
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:var(--space-6);align-items:stretch}.hero-copy,.panel{background:color-mix(in srgb,var(--color-surface) 90%,white 10%);border:1px solid color-mix(in srgb,var(--color-text) 10%,transparent);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+    .hero-copy{padding:clamp(1.5rem,2vw,2.25rem);display:flex;flex-direction:column;justify-content:space-between;gap:var(--space-6)} .eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);padding:.4rem .75rem;border-radius:var(--radius-full);background:var(--color-primary-highlight);color:var(--color-primary);font-size:var(--text-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;width:fit-content}
+    h1{margin:0;font-size:var(--text-xl);line-height:1.08;letter-spacing:-.04em}.lede{margin:0;max-width:58ch;color:var(--color-text-muted)} .hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)} .stat{padding:var(--space-4);border-radius:var(--radius-md);background:var(--color-surface-2);border:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)} .stat-label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-faint)} .stat-value{font-size:var(--text-lg);font-weight:900;margin-top:var(--space-2)}
+    .panel{padding:clamp(1.25rem,1.8vw,2rem)} .panel-header{display:flex;align-items:start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-5)} .panel-title{margin:0;font-size:var(--text-lg)} .panel-note{margin:0;font-size:var(--text-sm);color:var(--color-text-muted)} .form-grid{display:grid;gap:var(--space-4)} .field{display:grid;gap:var(--space-2)} .field-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);font-size:var(--text-sm);font-weight:700}.helper{font-size:var(--text-xs);color:var(--color-text-faint);font-weight:500}
+    .input-wrap{position:relative}.prefix,.suffix{position:absolute;inset-block:0;display:grid;place-items:center;padding-inline:var(--space-4);color:var(--color-text-faint);pointer-events:none;font-size:var(--text-sm);font-weight:700}.prefix{inset-inline-start:0}.suffix{inset-inline-end:0}
+    .input{width:100%;min-height:3.5rem;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);padding:.9rem 1rem;transition:border-color var(--transition-interactive),box-shadow var(--transition-interactive),background var(--transition-interactive)} .input.with-prefix{padding-left:2.5rem}.input.with-suffix{padding-right:3.25rem}.input:focus{border-color:var(--color-primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--color-primary) 16%,transparent);outline:none}
+    input[type="range"]{width:100%;accent-color:var(--color-primary)} .range-meta{display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--color-text-faint);margin-top:.1rem}
+    .summary-grid{margin-top:var(--space-6);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)} .summary-card{padding:var(--space-4);border-radius:var(--radius-md);background:linear-gradient(180deg,color-mix(in srgb,var(--color-surface-2) 94%,white 6%),var(--color-surface));border:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)} .summary-card.highlight{background:linear-gradient(180deg,color-mix(in srgb,var(--color-primary) 10%,var(--color-surface-2)),color-mix(in srgb,var(--color-primary) 4%,var(--color-surface)));border-color:color-mix(in srgb,var(--color-primary) 28%,transparent)}
+    .summary-label{font-size:var(--text-xs);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--space-2)} .summary-value{font-size:clamp(1.4rem,1.1rem + 1vw,2rem);line-height:1.1;font-weight:900;font-variant-numeric:tabular-nums lining-nums} .summary-note{margin-top:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted)}
+    .detail-list{margin-top:var(--space-6);padding-top:var(--space-5);border-top:1px solid var(--color-divider);display:grid;gap:var(--space-3)} .detail-row{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center;font-size:var(--text-sm)} .detail-row strong{font-size:var(--text-base);font-variant-numeric:tabular-nums lining-nums}
+    .formula{margin-top:var(--space-6);padding:var(--space-4);border-radius:var(--radius-md);background:var(--color-surface-2);color:var(--color-text-muted);font-size:var(--text-sm)}
+    .info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4);margin-top:var(--space-6)} .info-card{padding:var(--space-5);background:color-mix(in srgb,var(--color-surface) 94%,white 6%);border-radius:var(--radius-md);border:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)} .info-card h2{margin:0 0 var(--space-2);font-size:var(--text-base)} .info-card p{margin:0;font-size:var(--text-sm);color:var(--color-text-muted)} .footer-note{margin-top:var(--space-6);text-align:center;color:var(--color-text-faint);font-size:var(--text-xs)}
+    @media (max-width:920px){.hero,.hero-stats,.summary-grid,.info-grid{grid-template-columns:1fr}} @media (max-width:560px){.app-shell{width:min(100% - 1rem,100%);padding-top:var(--space-4)}.hero-copy,.panel{padding:1rem}.topbar{margin-bottom:var(--space-5)}.panel-header,.field-head,.detail-row{flex-direction:column;align-items:start}.theme-toggle{inline-size:2.5rem;block-size:2.5rem}}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#calculator" aria-label="Loan calculator home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="22" height="22" rx="7" stroke="currentColor" stroke-width="2.5"/><path d="M11 19.5L15 15.5L18 18.5L22 12.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Loan Calculator</span>
+      </a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </header>
+    <main id="calculator">
+      <section class="hero" aria-label="Loan calculator application">
+        <article class="hero-copy">
+          <div>
+            <div class="eyebrow">Instant repayment estimate</div>
+            <h1>Estimate monthly loan payments with clear principal, interest, and total repayment figures.</h1>
+            <p class="lede">Adjust the loan amount, annual interest rate, and term to see a fast breakdown that supports smarter borrowing decisions. The calculator updates live as you type.</p>
+          </div>
+          <div class="hero-stats" aria-label="Key benefits">
+            <div class="stat"><div class="stat-label">Outputs</div><div class="stat-value">Monthly EMI</div></div>
+            <div class="stat"><div class="stat-label">Breakdown</div><div class="stat-value">Interest + Principal</div></div>
+            <div class="stat"><div class="stat-label">Use case</div><div class="stat-value">Fast planning</div></div>
+          </div>
+        </article>
+        <section class="panel" aria-labelledby="panel-title">
+          <div class="panel-header">
+            <div>
+              <h2 id="panel-title" class="panel-title">Repayment inputs</h2>
+              <p class="panel-note">Use your actual loan values for a realistic estimate.</p>
+            </div>
+          </div>
+          <form class="form-grid" id="loanForm">
+            <div class="field">
+              <div class="field-head"><label for="loanAmount">Loan amount</label><span class="helper">Enter principal amount</span></div>
+              <div class="input-wrap"><span class="prefix">₹</span><input id="loanAmount" class="input with-prefix" type="number" min="1000" step="1000" value="500000" /></div>
+              <input id="loanAmountRange" type="range" min="10000" max="5000000" step="10000" value="500000" />
+              <div class="range-meta"><span>₹10k</span><span>₹50L</span></div>
+            </div>
+            <div class="field">
+              <div class="field-head"><label for="interestRate">Annual interest rate</label><span class="helper">Nominal yearly rate</span></div>
+              <div class="input-wrap"><input id="interestRate" class="input with-suffix" type="number" min="0" max="40" step="0.1" value="8.5" /><span class="suffix">%</span></div>
+              <input id="interestRateRange" type="range" min="0" max="25" step="0.1" value="8.5" />
+              <div class="range-meta"><span>0%</span><span>25%</span></div>
+            </div>
+            <div class="field">
+              <div class="field-head"><label for="loanTerm">Loan term</label><span class="helper">Repayment duration</span></div>
+              <div class="input-wrap"><input id="loanTerm" class="input with-suffix" type="number" min="1" max="40" step="1" value="5" /><span class="suffix">Years</span></div>
+              <input id="loanTermRange" type="range" min="1" max="40" step="1" value="5" />
+              <div class="range-meta"><span>1 year</span><span>40 years</span></div>
+            </div>
+          </form>
+          <section class="summary-grid" aria-label="Loan summary results">
+            <div class="summary-card highlight"><div class="summary-label">Monthly payment</div><div id="monthlyPayment" class="summary-value">₹0</div><div class="summary-note">Estimated EMI for your selected term.</div></div>
+            <div class="summary-card"><div class="summary-label">Total repayment</div><div id="totalRepayment" class="summary-value">₹0</div><div class="summary-note">Principal plus total interest.</div></div>
+            <div class="summary-card"><div class="summary-label">Total interest</div><div id="totalInterest" class="summary-value">₹0</div><div class="summary-note">Total cost of borrowing over time.</div></div>
+            <div class="summary-card"><div class="summary-label">Loan term</div><div id="termMonths" class="summary-value">0 months</div><div class="summary-note">Calculated from your selected years.</div></div>
+          </section>
+          <div class="detail-list" aria-label="Additional details">
+            <div class="detail-row"><span>Principal amount</span><strong id="principalValue">₹0</strong></div>
+            <div class="detail-row"><span>Interest share</span><strong id="interestShare">0%</strong></div>
+            <div class="detail-row"><span>Total monthly periods</span><strong id="paymentsCount">0</strong></div>
+          </div>
+          <div class="formula">EMI is calculated using the standard reducing-balance formula based on monthly interest rate and total number of payments.</div>
+        </section>
+      </section>
+      <section class="info-grid" aria-label="Calculator benefits">
+        <article class="info-card"><h2>Clear estimates</h2><p>See monthly payment, interest cost, and total repayment in one place without switching between tools.</p></article>
+        <article class="info-card"><h2>Custom inputs</h2><p>Change amount, rate, and term using number fields or sliders for quick scenario testing.</p></article>
+        <article class="info-card"><h2>Decision support</h2><p>Compare repayment options instantly before applying for a home, personal, vehicle, or business loan.</p></article>
+      </section>
+    </main>
+    <p class="footer-note">Estimates are for planning purposes and may differ from lender-specific schedules, fees, taxes, or insurance charges.</p>
+  </div>
+  <script>
+    const state={theme:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'};
+    const root=document.documentElement; const themeToggle=document.querySelector('[data-theme-toggle]');
+    const icons={light:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>',dark:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'};
+    function applyTheme(theme){state.theme=theme;root.setAttribute('data-theme',theme);themeToggle.setAttribute('aria-label',theme==='dark'?'Switch to light mode':'Switch to dark mode');themeToggle.innerHTML=theme==='dark'?icons.light:icons.dark}
+    applyTheme(state.theme); themeToggle.addEventListener('click',()=>applyTheme(state.theme==='dark'?'light':'dark'));
+    const fields={loanAmount:document.getElementById('loanAmount'),interestRate:document.getElementById('interestRate'),loanTerm:document.getElementById('loanTerm'),loanAmountRange:document.getElementById('loanAmountRange'),interestRateRange:document.getElementById('interestRateRange'),loanTermRange:document.getElementById('loanTermRange')};
+    const outputs={monthlyPayment:document.getElementById('monthlyPayment'),totalRepayment:document.getElementById('totalRepayment'),totalInterest:document.getElementById('totalInterest'),termMonths:document.getElementById('termMonths'),principalValue:document.getElementById('principalValue'),interestShare:document.getElementById('interestShare'),paymentsCount:document.getElementById('paymentsCount')};
+    const currencyFormatter=new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0});
+    const clamp=(value,min,max)=>Math.min(Math.max(value,min),max);
+    function syncPair(source,target){target.value=source.value;calculateLoan()}
+    function calculateLoan(){
+      const principal=clamp(Number(fields.loanAmount.value)||0,1000,500000000);
+      const annualRate=clamp(Number(fields.interestRate.value)||0,0,100);
+      const years=clamp(Number(fields.loanTerm.value)||0,1,100);
+      const monthlyRate=annualRate/100/12; const payments=Math.round(years*12);
+      let monthlyPayment=0;
+      if(monthlyRate===0){monthlyPayment=payments?principal/payments:0}else{monthlyPayment=principal*monthlyRate*Math.pow(1+monthlyRate,payments)/(Math.pow(1+monthlyRate,payments)-1)}
+      const totalRepayment=monthlyPayment*payments; const totalInterest=totalRepayment-principal; const interestShare=totalRepayment>0?(totalInterest/totalRepayment)*100:0;
+      outputs.monthlyPayment.textContent=currencyFormatter.format(Math.round(monthlyPayment)); outputs.totalRepayment.textContent=currencyFormatter.format(Math.round(totalRepayment)); outputs.totalInterest.textContent=currencyFormatter.format(Math.round(totalInterest)); outputs.termMonths.textContent=`${payments} months`; outputs.principalValue.textContent=currencyFormatter.format(Math.round(principal)); outputs.interestShare.textContent=`${interestShare.toFixed(1)}%`; outputs.paymentsCount.textContent=payments.toLocaleString('en-IN');
+      fields.loanAmountRange.value=clamp(principal,Number(fields.loanAmountRange.min),Number(fields.loanAmountRange.max)); fields.interestRateRange.value=clamp(annualRate,Number(fields.interestRateRange.min),Number(fields.interestRateRange.max)); fields.loanTermRange.value=clamp(years,Number(fields.loanTermRange.min),Number(fields.loanTermRange.max));
+    }
+    fields.loanAmount.addEventListener('input',calculateLoan); fields.interestRate.addEventListener('input',calculateLoan); fields.loanTerm.addEventListener('input',calculateLoan);
+    fields.loanAmountRange.addEventListener('input',()=>syncPair(fields.loanAmountRange,fields.loanAmount)); fields.interestRateRange.addEventListener('input',()=>syncPair(fields.interestRateRange,fields.interestRate)); fields.loanTermRange.addEventListener('input',()=>syncPair(fields.loanTermRange,fields.loanTerm));
+    calculateLoan();
+  </script>
+</body>
+</html>
