@@ -483,19 +483,19 @@
         </section>
 
         <section class="panel tool-panel" data-tool="tax" aria-labelledby="tax-panel-title">
-          <div class="panel-header"><div><h2 id="tax-panel-title" class="panel-title">Income tax calculator</h2><p class="panel-note">Quick estimate for taxable income under a simplified slab-based approach for Indian users.</p></div></div>
+          <div class="panel-header"><div><h2 id="tax-panel-title" class="panel-title">Income tax calculator</h2><p class="panel-note">Quick estimate for resident individual income tax in India using current slab rates for the old and new regimes.</p></div></div>
           <form class="form-grid" id="taxForm">
             <div class="field"><div class="field-head"><label for="taxIncome">Annual taxable income</label><span class="helper">Enter taxable income in rupees</span></div><div class="input-wrap"><span class="prefix">₹</span><input id="taxIncome" class="input with-prefix" type="number" min="0" step="1000" value="1200000" /></div></div>
-            <div class="field"><div class="field-head"><label for="taxRegime">Tax regime</label><span class="helper">For simplified comparison</span></div><select id="taxRegime" class="select"><option value="new">New regime (simplified)</option><option value="old">Old regime (simplified)</option></select></div>
+            <div class="field"><div class="field-head"><label for="taxRegime">Tax regime</label><span class="helper">Current Indian tax regimes</span></div><select id="taxRegime" class="select"><option value="new">New regime (simplified)</option><option value="old">Old regime (simplified)</option></select></div>
             <div class="field"><div class="field-head"><label for="taxDeductions">Deductions (optional)</label><span class="helper">Useful mainly for old regime estimate</span></div><div class="input-wrap"><span class="prefix">₹</span><input id="taxDeductions" class="input with-prefix" type="number" min="0" step="1000" value="150000" /></div></div>
           </form>
           <section class="summary-grid">
-            <div class="summary-card highlight"><div class="summary-label">Estimated tax</div><div id="taxEstimated" class="summary-value">₹0</div><div class="summary-note">Quick slab-based tax estimate.</div></div>
-            <div class="summary-card"><div class="summary-label">Taxable amount used</div><div id="taxableAmountUsed" class="summary-value">₹0</div><div class="summary-note">Income considered after basic deductions in this simplified model.</div></div>
+            <div class="summary-card highlight"><div class="summary-label">Estimated tax</div><div id="taxEstimated" class="summary-value">₹0</div><div class="summary-note">Estimated income tax before cess and surcharge.</div></div>
+            <div class="summary-card"><div class="summary-label">Taxable amount used</div><div id="taxableAmountUsed" class="summary-value">₹0</div><div class="summary-note">Income considered after eligible deductions for the selected regime.</div></div>
             <div class="summary-card"><div class="summary-label">Estimated monthly tax outgo</div><div id="taxMonthly" class="summary-value">₹0</div><div class="summary-note">Annual estimate divided into 12 months.</div></div>
             <div class="summary-card"><div class="summary-label">Selected regime</div><div id="taxRegimeEcho" class="summary-value">New</div><div class="summary-note">Regime used for the current estimate.</div></div>
           </section>
-          <div class="formula">This is a simplified estimate for planning only and does not replace official tax computation or professional advice.</div>
+          <div class="formula">Estimate based on resident individual slab rates. Rebate, cess, surcharge, capital gains, special rate income, and other case-specific rules are not fully covered.</div>
         </section>
 
         <section class="panel tool-panel" data-tool="electricity" aria-labelledby="elec-panel-title">
@@ -853,75 +853,72 @@
     gstAmount.addEventListener("input", calculateGST); gstRate.addEventListener("input", calculateGST); gstModeInputs.forEach((input) => input.addEventListener("change", calculateGST));
 
     const taxIncome = document.getElementById('taxIncome');
-const taxRegime = document.getElementById('taxRegime');
-const taxDeductions = document.getElementById('taxDeductions');
-const taxEstimated = document.getElementById('taxEstimated');
-const taxableAmountUsed = document.getElementById('taxableAmountUsed');
-const taxMonthly = document.getElementById('taxMonthly');
-const taxRegimeEcho = document.getElementById('taxRegimeEcho');
+    const taxRegime = document.getElementById('taxRegime');
+    const taxDeductions = document.getElementById('taxDeductions');
+    const taxEstimated = document.getElementById('taxEstimated');
+    const taxableAmountUsed = document.getElementById('taxableAmountUsed');
+    const taxMonthly = document.getElementById('taxMonthly');
+    const taxRegimeEcho = document.getElementById('taxRegimeEcho');
 
-function calculateTaxBySlabs(amount, slabs) {
-  let tax = 0;
-  let previousLimit = 0;
+    function calculateTaxBySlabs(amount, slabs) {
+      let tax = 0;
+      let previousLimit = 0;
 
-  for (const slab of slabs) {
-    const upperLimit = slab.limit;
-    const taxableInSlab = Math.max(Math.min(amount, upperLimit) - previousLimit, 0);
-    tax += taxableInSlab * slab.rate;
-    previousLimit = upperLimit;
-  }
+      for (const slab of slabs) {
+        const upperLimit = slab.limit;
+        const taxableInSlab = Math.max(Math.min(amount, upperLimit) - previousLimit, 0);
+        tax += taxableInSlab * slab.rate;
+        previousLimit = upperLimit;
+      }
 
-  const lastLimit = slabs[slabs.length - 1].limit;
-  if (amount > lastLimit) {
-    tax += (amount - lastLimit) * slabs[slabs.length - 1].topRate;
-  }
+      const lastLimit = slabs[slabs.length - 1].limit;
+      if (amount > lastLimit) {
+        tax += (amount - lastLimit) * slabs[slabs.length - 1].topRate;
+      }
 
-  return tax;
-}
+      return tax;
+    }
 
-function calculateIncomeTax() {
-  const income = Math.max(Number(taxIncome.value) || 0, 0);
-  const deductions = Math.max(Number(taxDeductions.value) || 0, 0);
-  const regime = taxRegime.value;
+    function calculateIncomeTax() {
+      const income = Math.max(Number(taxIncome.value) || 0, 0);
+      const deductions = Math.max(Number(taxDeductions.value) || 0, 0);
+      const regime = taxRegime.value;
 
-  let taxable = income;
-  let tax = 0;
+      let taxable = income;
+      let tax = 0;
 
-  if (regime === 'old') {
-    taxable = Math.max(income - deductions, 0);
+      if (regime === 'old') {
+        taxable = Math.max(income - deductions, 0);
+        tax = calculateTaxBySlabs(taxable, [
+          { limit: 250000, rate: 0, topRate: 0.30 },
+          { limit: 500000, rate: 0.05, topRate: 0.30 },
+          { limit: 1000000, rate: 0.20, topRate: 0.30 }
+        ]);
+        if (taxable <= 500000) tax = 0;
+      } else {
+        taxable = income;
+        tax = calculateTaxBySlabs(taxable, [
+          { limit: 400000, rate: 0, topRate: 0.30 },
+          { limit: 800000, rate: 0.05, topRate: 0.30 },
+          { limit: 1200000, rate: 0.10, topRate: 0.30 },
+          { limit: 1600000, rate: 0.15, topRate: 0.30 },
+          { limit: 2000000, rate: 0.20, topRate: 0.30 },
+          { limit: 2400000, rate: 0.25, topRate: 0.30 }
+        ]);
+        if (taxable <= 1200000) tax = 0;
+      }
 
-    tax = calculateTaxBySlabs(taxable, [
-      { limit: 250000, rate: 0, topRate: 0.30 },
-      { limit: 500000, rate: 0.05, topRate: 0.30 },
-      { limit: 1000000, rate: 0.20, topRate: 0.30 }
-    ]);
+      taxEstimated.textContent = currencyFormatter.format(Math.round(tax));
+      taxableAmountUsed.textContent = currencyFormatter.format(Math.round(taxable));
+      taxMonthly.textContent = currencyFormatter.format(Math.round(tax / 12));
+      taxRegimeEcho.textContent = regime === 'old' ? 'Old' : 'New';
+      taxDeductions.disabled = regime !== 'old';
+    }
 
-    if (taxable <= 500000) tax = 0;
-  } else {
-    taxable = income;
-
-    tax = calculateTaxBySlabs(taxable, [
-      { limit: 400000, rate: 0, topRate: 0.30 },
-      { limit: 800000, rate: 0.05, topRate: 0.30 },
-      { limit: 1200000, rate: 0.10, topRate: 0.30 },
-      { limit: 1600000, rate: 0.15, topRate: 0.30 },
-      { limit: 2000000, rate: 0.20, topRate: 0.30 },
-      { limit: 2400000, rate: 0.25, topRate: 0.30 }
-    ]);
-
-    if (taxable <= 1200000) tax = 0;
-  }
-
-  taxEstimated.textContent = currencyFormatter.format(Math.round(tax));
-  taxableAmountUsed.textContent = currencyFormatter.format(Math.round(taxable));
-  taxMonthly.textContent = currencyFormatter.format(Math.round(tax / 12));
-  taxRegimeEcho.textContent = regime === 'old' ? 'Old' : 'New';
-  taxDeductions.disabled = regime !== 'old';
-}
-
-taxIncome.addEventListener('input', calculateIncomeTax);
-taxRegime.addEventListener('change', calculateIncomeTax);
-taxDeductions.addEventListener('input', calculateIncomeTax);
+    taxIncome.addEventListener('input', calculateIncomeTax);
+    taxRegime.addEventListener('change', calculateIncomeTax);
+    taxDeductions.addEventListener('input', calculateIncomeTax);
+    calculateIncomeTax();
 
     const elecUnits = document.getElementById("elecUnits"), elecRate = document.getElementById("elecRate"), elecFixed = document.getElementById("elecFixed");
     const elecBillEl = document.getElementById("elecBill"), elecEnergyEl = document.getElementById("elecEnergy"), elecFixedEchoEl = document.getElementById("elecFixedEcho"), elecUnitsEchoEl = document.getElementById("elecUnitsEcho");
