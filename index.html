@@ -852,37 +852,76 @@
     }
     gstAmount.addEventListener("input", calculateGST); gstRate.addEventListener("input", calculateGST); gstModeInputs.forEach((input) => input.addEventListener("change", calculateGST));
 
-    const taxIncome = document.getElementById("taxIncome"), taxRegime = document.getElementById("taxRegime"), taxDeductions = document.getElementById("taxDeductions");
-    const taxEstimated = document.getElementById("taxEstimated"), taxableAmountUsed = document.getElementById("taxableAmountUsed"), taxMonthly = document.getElementById("taxMonthly"), taxRegimeEcho = document.getElementById("taxRegimeEcho");
-    function calculateTaxBySlabs(amount, slabs) {
-      let tax = 0, remaining = amount, previousLimit = 0;
-      for (const slab of slabs) {
-        const slabLimit = slab.limit;
-        const taxableInSlab = Math.min(remaining, slabLimit - previousLimit);
-        if (taxableInSlab > 0) { tax += taxableInSlab * slab.rate; remaining -= taxableInSlab; }
-        previousLimit = slabLimit;
-        if (remaining <= 0) break;
-      }
-      if (remaining > 0) tax += remaining * slabs[slabs.length - 1].topRate;
-      return tax;
-    }
-    function calculateIncomeTax() {
-      const income = Number(taxIncome.value) || 0, deductions = Number(taxDeductions.value) || 0, regime = taxRegime.value;
-      let taxable = 0, tax = 0;
-      if (regime === "old") {
-        taxable = Math.max(income - deductions, 0);
-        tax = calculateTaxBySlabs(taxable, [{ limit: 250000, rate: 0, topRate: 0.3 }, { limit: 500000, rate: 0.05, topRate: 0.3 }, { limit: 1000000, rate: 0.2, topRate: 0.3 }]);
-      } else {
-        taxable = income;
-        tax = calculateTaxBySlabs(taxable, [{ limit: 300000, rate: 0, topRate: 0.3 }, { limit: 700000, rate: 0.05, topRate: 0.3 }, { limit: 1000000, rate: 0.1, topRate: 0.3 }, { limit: 1200000, rate: 0.15, topRate: 0.3 }, { limit: 1500000, rate: 0.2, topRate: 0.3 }]);
-      }
-      taxEstimated.textContent = currencyFormatter.format(Math.round(tax));
-      taxableAmountUsed.textContent = currencyFormatter.format(Math.round(taxable));
-      taxMonthly.textContent = currencyFormatter.format(Math.round(tax / 12));
-      taxRegimeEcho.textContent = regime === "old" ? "Old" : "New";
-    }
-    [taxIncome, taxRegime, taxDeductions].forEach((el) => el.addEventListener("input", calculateIncomeTax));
-    taxRegime.addEventListener("change", calculateIncomeTax);
+    const taxIncome = document.getElementById('taxIncome');
+const taxRegime = document.getElementById('taxRegime');
+const taxDeductions = document.getElementById('taxDeductions');
+const taxEstimated = document.getElementById('taxEstimated');
+const taxableAmountUsed = document.getElementById('taxableAmountUsed');
+const taxMonthly = document.getElementById('taxMonthly');
+const taxRegimeEcho = document.getElementById('taxRegimeEcho');
+
+function calculateTaxBySlabs(amount, slabs) {
+  let tax = 0;
+  let previousLimit = 0;
+
+  for (const slab of slabs) {
+    const upperLimit = slab.limit;
+    const taxableInSlab = Math.max(Math.min(amount, upperLimit) - previousLimit, 0);
+    tax += taxableInSlab * slab.rate;
+    previousLimit = upperLimit;
+  }
+
+  const lastLimit = slabs[slabs.length - 1].limit;
+  if (amount > lastLimit) {
+    tax += (amount - lastLimit) * slabs[slabs.length - 1].topRate;
+  }
+
+  return tax;
+}
+
+function calculateIncomeTax() {
+  const income = Math.max(Number(taxIncome.value) || 0, 0);
+  const deductions = Math.max(Number(taxDeductions.value) || 0, 0);
+  const regime = taxRegime.value;
+
+  let taxable = income;
+  let tax = 0;
+
+  if (regime === 'old') {
+    taxable = Math.max(income - deductions, 0);
+
+    tax = calculateTaxBySlabs(taxable, [
+      { limit: 250000, rate: 0, topRate: 0.30 },
+      { limit: 500000, rate: 0.05, topRate: 0.30 },
+      { limit: 1000000, rate: 0.20, topRate: 0.30 }
+    ]);
+
+    if (taxable <= 500000) tax = 0;
+  } else {
+    taxable = income;
+
+    tax = calculateTaxBySlabs(taxable, [
+      { limit: 400000, rate: 0, topRate: 0.30 },
+      { limit: 800000, rate: 0.05, topRate: 0.30 },
+      { limit: 1200000, rate: 0.10, topRate: 0.30 },
+      { limit: 1600000, rate: 0.15, topRate: 0.30 },
+      { limit: 2000000, rate: 0.20, topRate: 0.30 },
+      { limit: 2400000, rate: 0.25, topRate: 0.30 }
+    ]);
+
+    if (taxable <= 1200000) tax = 0;
+  }
+
+  taxEstimated.textContent = currencyFormatter.format(Math.round(tax));
+  taxableAmountUsed.textContent = currencyFormatter.format(Math.round(taxable));
+  taxMonthly.textContent = currencyFormatter.format(Math.round(tax / 12));
+  taxRegimeEcho.textContent = regime === 'old' ? 'Old' : 'New';
+  taxDeductions.disabled = regime !== 'old';
+}
+
+taxIncome.addEventListener('input', calculateIncomeTax);
+taxRegime.addEventListener('change', calculateIncomeTax);
+taxDeductions.addEventListener('input', calculateIncomeTax);
 
     const elecUnits = document.getElementById("elecUnits"), elecRate = document.getElementById("elecRate"), elecFixed = document.getElementById("elecFixed");
     const elecBillEl = document.getElementById("elecBill"), elecEnergyEl = document.getElementById("elecEnergy"), elecFixedEchoEl = document.getElementById("elecFixedEcho"), elecUnitsEchoEl = document.getElementById("elecUnitsEcho");
