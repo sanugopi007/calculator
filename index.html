@@ -3157,7 +3157,7 @@
           updateDualInfo(from, to, rate);
         }
 
-        async function updateFromApi() {
+               async function updateFromApi() {
           const from = fromSelect.value;
           const to = toSelect.value;
 
@@ -3169,9 +3169,8 @@
             lastApiRate = rate;
             lastApiDate = date;
 
-            if (!rateInput.value || Number(rateInput.value) === 0) {
-              rateInput.value = rate.toFixed(4);
-            }
+            // Always show the fetched rate for the selected pair
+            rateInput.value = rate.toFixed(4);
 
             statusOutput.textContent = "Live rate OK";
             applyConversion();
@@ -3179,6 +3178,11 @@
             console.error(err);
             statusOutput.textContent = "API error";
             statusOutput.style.color = "#b91c1c";
+
+            // Clear stale data so you don't reuse an old pair's rate
+            lastApiRate = null;
+            lastApiDate = null;
+            rateInput.value = "";
 
             applyConversion();
           }
