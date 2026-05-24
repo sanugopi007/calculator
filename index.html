@@ -1026,7 +1026,6 @@
           aria-label="Select a tool"
         >
           <span class="tool-switcher-group-label">Choose a tool</span>
-
           <button
             type="button"
             class="tool-pill"
@@ -1218,7 +1217,6 @@
                     runs.
                   </p>
                 </div>
-
                 <div class="summary-panel">
                   <h3 class="summary-heading">Current timer</h3>
                   <div class="summary-cards">
@@ -1451,27 +1449,120 @@
               </div>
             </section>
 
-         <!-- Currency Panel (from older version) -->
-<section id="currency-converter" class="tool-panel" data-tool="currency">
-  <div class="panel-header">
-    <h2 class="panel-title">Currency Converter</h2>
-  </div>
-  <p>Convert between currencies using a custom exchange rate.</p>
-  <div class="field-grid">
-    <div class="field">
-      <label class="field-label">Amount</label>
-      <input id="currencyAmount" type="number" class="input with-prefix" value="1000" min="0" step="0.01">
-    </div>
-    <div class="field">
-      <label class="field-label">Exchange rate</label>
-      <input id="currencyRate" type="number" class="input" value="0.012" min="0" step="0.0001">
-    </div>
-  </div>
-  <div class="summary-card accent">
-    <div class="summary-label">Converted amount</div>
-    <div id="currencyResult" class="summary-value">–</div>
-  </div>
-</section>
+            <!-- Currency Panel (updated) -->
+            <section
+              id="currency-converter"
+              class="panel tool-panel"
+              data-tool="currency"
+              aria-label="Currency converter"
+            >
+              <header class="panel-header">
+                <div>
+                  <h2 class="panel-title">Currency Converter</h2>
+                  <p class="panel-subtitle">
+                    Convert between currencies using live daily exchange rates.
+                  </p>
+                  <p class="panel-tagline">
+                    Rates are fetched from a free public API and updated automatically.
+                  </p>
+                </div>
+              </header>
+
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="currencyAmount" class="field-label">Amount</label>
+                  </div>
+                  <div class="input-wrap">
+                    <input
+                      id="currencyAmount"
+                      type="number"
+                      class="input"
+                      value="1000"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div class="field-label-row" style="margin-top: var(--space-4);">
+                    <label for="currencyFrom" class="field-label">From currency</label>
+                  </div>
+                  <div class="input-wrap">
+                    <select id="currencyFrom" class="select">
+                      <option value="INR">INR – Indian Rupee</option>
+                      <option value="USD">USD – US Dollar</option>
+                      <option value="EUR">EUR – Euro</option>
+                      <option value="GBP">GBP – British Pound</option>
+                      <option value="AED">AED – UAE Dirham</option>
+                      <option value="SAR">SAR – Saudi Riyal</option>
+                      <option value="AUD">AUD – Australian Dollar</option>
+                      <option value="CAD">CAD – Canadian Dollar</option>
+                      <option value="JPY">JPY – Japanese Yen</option>
+                      <option value="SGD">SGD – Singapore Dollar</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="currencyTo" class="field-label">To currency</label>
+                  </div>
+                  <div class="input-wrap">
+                    <select id="currencyTo" class="select">
+                      <option value="USD">USD – US Dollar</option>
+                      <option value="INR">INR – Indian Rupee</option>
+                      <option value="EUR">EUR – Euro</option>
+                      <option value="GBP">GBP – British Pound</option>
+                      <option value="AED">AED – UAE Dirham</option>
+                      <option value="SAR">SAR – Saudi Riyal</option>
+                      <option value="AUD">Australian Dollar</option>
+                      <option value="CAD">Canadian Dollar</option>
+                      <option value="JPY">Japanese Yen</option>
+                      <option value="SGD">Singapore Dollar</option>
+                    </select>
+                  </div>
+
+                  <div class="field-label-row" style="margin-top: var(--space-4);">
+                    <label for="currencyRate" class="field-label">Exchange rate</label>
+                    <span class="field-helper" id="currencyRateInfo">
+                      1 From = ? To
+                    </span>
+                  </div>
+                  <div class="input-wrap">
+                    <input
+                      id="currencyRate"
+                      type="number"
+                      class="input"
+                      step="0.0001"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="summary-panel" style="margin-top: var(--space-4);">
+                <h3 class="summary-heading">Conversion result</h3>
+                <div class="summary-cards">
+                  <article class="summary-card accent">
+                    <div class="summary-label">Converted amount</div>
+                    <p id="currencyResult" class="summary-value">–</p>
+                    <p class="summary-note" id="currencyResultNote">
+                      Change the amount or currencies to refresh the result.
+                    </p>
+                    <p class="summary-note" id="currencyLastUpdated">
+                      Last updated: –
+                    </p>
+                  </article>
+                  <article class="summary-card">
+                    <div class="summary-label">API status</div>
+                    <p id="currencyStatus" class="summary-value">Loading…</p>
+                    <p class="summary-note">
+                      Rates powered by a free public exchange-rate API.
+                    </p>
+                  </article>
+                </div>
+              </div>
+            </section>
+
             <!-- EMI Panel -->
             <section
               class="panel tool-panel"
@@ -2686,12 +2777,6 @@
         const root = document.documentElement;
         const toggle = document.getElementById("themeToggle");
         const iconSpan = document.getElementById("themeIcon");
-
-
-
-
-
-        
         const icons = {
           light:
             '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>',
@@ -2868,7 +2953,7 @@
         renderStopwatch();
       })();
 
-      // Date calculator (from older version)
+      // Date calculator
       (function () {
         const startDateInput = document.getElementById("startDate");
         const endDateInput = document.getElementById("endDate");
@@ -2905,7 +2990,7 @@
         endDateInput.addEventListener("change", update);
       })();
 
-      // Age calculator (from older version)
+      // Age calculator
       (function () {
         const dobInput = document.getElementById("dob");
         const ageExact = document.getElementById("ageExact");
@@ -2953,7 +3038,6 @@
           if (nextBirthday < today) {
             nextBirthday.setFullYear(today.getFullYear() + 1);
           }
-
           const diffMs = nextBirthday - today;
           const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
           ageNextBirthday.textContent = `${diffDays} day${
@@ -2964,24 +3048,115 @@
         dobInput.addEventListener("change", updateAge);
       })();
 
-      // Currency Converter (from older version with live API)
-(function () {
-  const amountInput = document.getElementById("currencyAmount");
-  const rateInput = document.getElementById("currencyRate");
-  const resultOutput = document.getElementById("currencyResult");
+      // Currency Converter (live API + manual override)
+      (function () {
+        const apiBase = "https://api.frankfurter.app"; // official endpoint[web:35]
 
-  function update() {
-    const amount = Number(amountInput.value) || 0;
-    const rate = Number(rateInput.value) || 0;
-    const result = amount * rate;
-    resultOutput.textContent = result ? result.toFixed(2) : "–";
-  }
+        const amountInput = document.getElementById("currencyAmount");
+        const fromSelect = document.getElementById("currencyFrom");
+        const toSelect = document.getElementById("currencyTo");
+        const rateInput = document.getElementById("currencyRate");
+        const rateInfo = document.getElementById("currencyRateInfo");
+        const resultOutput = document.getElementById("currencyResult");
+        const resultNote = document.getElementById("currencyResultNote");
+        const statusOutput = document.getElementById("currencyStatus");
+        const lastUpdatedEl = document.getElementById("currencyLastUpdated");
 
-  amountInput.addEventListener("input", update);
-  rateInput.addEventListener("input", update);
-  update();
-})();
-      // EMI Calculator (older-style logic but matches current IDs)
+        let lastApiRate = null;
+        let lastApiDate = null;
+
+        async function fetchRate(base, quote) {
+          if (base === quote) {
+            return { rate: 1, date: new Date().toISOString().slice(0, 10) };
+          }
+
+          const url = `${apiBase}/latest?from=${encodeURIComponent(
+            base
+          )}&to=${encodeURIComponent(quote)}`;
+
+          const res = await fetch(url);
+          if (!res.ok) {
+            throw new Error("Failed to fetch rate");
+          }
+          const data = await res.json(); // { amount, base, date, rates: { [quote]: number } }[web:30]
+          return { rate: data.rates[quote], date: data.date };
+        }
+
+        function applyConversion() {
+          const amount = Number(amountInput.value) || 0;
+          const from = fromSelect.value;
+          const to = toSelect.value;
+          const manualRate = Number(rateInput.value);
+
+          const rate =
+            manualRate && manualRate > 0
+              ? manualRate
+              : lastApiRate && lastApiRate > 0
+              ? lastApiRate
+              : 0;
+
+          if (!rate) {
+            resultOutput.textContent = "–";
+            resultNote.textContent =
+              "Enter a valid exchange rate or wait for live rate.";
+            rateInfo.textContent = `1 ${from} = ? ${to}`;
+            lastUpdatedEl.textContent = "Last updated: –";
+            return;
+          }
+
+          const converted = amount * rate;
+          resultOutput.textContent = converted.toFixed(2);
+          resultNote.textContent =
+            manualRate && manualRate > 0 && manualRate !== lastApiRate
+              ? "Using manual rate override."
+              : "Converted using latest daily rate.";
+          rateInfo.textContent = `1 ${from} = ${rate.toFixed(4)} ${to}`;
+
+          if (lastApiDate && (!manualRate || manualRate === lastApiRate)) {
+            lastUpdatedEl.textContent = `Last updated: ${lastApiDate}`;
+          } else if (manualRate && manualRate > 0 && manualRate !== lastApiRate) {
+            lastUpdatedEl.textContent = "Last updated: manual rate";
+          } else {
+            lastUpdatedEl.textContent = "Last updated: –";
+          }
+        }
+
+        async function updateFromApi() {
+          const from = fromSelect.value;
+          const to = toSelect.value;
+
+          statusOutput.textContent = "Fetching rate…";
+          statusOutput.style.color = "";
+
+          try {
+            const { rate, date } = await fetchRate(from, to);
+            lastApiRate = rate;
+            lastApiDate = date;
+
+            if (!rateInput.value || Number(rateInput.value) === 0) {
+              rateInput.value = rate.toFixed(4);
+            }
+
+            statusOutput.textContent = "Live rate OK";
+            applyConversion();
+          } catch (err) {
+            console.error(err);
+            statusOutput.textContent = "API error";
+            statusOutput.style.color = "#b91c1c";
+
+            applyConversion();
+          }
+        }
+
+        amountInput.addEventListener("input", applyConversion);
+        fromSelect.addEventListener("change", updateFromApi);
+        toSelect.addEventListener("change", updateFromApi);
+        rateInput.addEventListener("input", applyConversion);
+
+        updateFromApi();
+      })();
+
+      // EMI Calculator
       (function () {
         const amountInput = document.getElementById("loanAmount");
         const amountRange = document.getElementById("loanAmountRange");
@@ -3036,7 +3211,7 @@
         calculate();
       })();
 
-      // FD Calculator (older formula style)
+      // FD Calculator
       (function () {
         const principalInput = document.getElementById("fdPrincipal");
         const principalRange = document.getElementById("fdPrincipalRange");
@@ -3085,7 +3260,7 @@
         calculate();
       })();
 
-      // SIP Calculator (old accurate logic)
+      // SIP Calculator
       (function () {
         const sipAmount = document.getElementById("sipAmount");
         const sipRate = document.getElementById("sipRate");
@@ -3145,7 +3320,7 @@
         calculate();
       })();
 
-      // GST Calculator (older add/remove logic adapted to current UI)
+      // GST Calculator
       (function () {
         const amountInput = document.getElementById("gstAmount");
         const rateInput = document.getElementById("gstRate");
@@ -3180,9 +3355,9 @@
             tax = gross - net;
           }
 
-                      gstValue.textContent = `₹${tax.toFixed(2)}`;
-                      gstNet.textContent = `Net: ₹${net.toFixed(2)}`;
-                      gstGross.textContent = `Gross: ₹${gross.toFixed(2)}`;
+          gstValue.textContent = `₹${tax.toFixed(2)}`;
+          gstNet.textContent = `Net: ₹${net.toFixed(2)}`;
+          gstGross.textContent = `Gross: ₹${gross.toFixed(2)}`;
         }
 
         amountInput.addEventListener("input", calculate);
@@ -3191,22 +3366,7 @@
         calculate();
       })();
 
-      // Income Tax (slab-based from older version)
-        function calculate() {
-    const income = Number(incomeInput.value) || 0;
-    const rate = Number(rateInput.value) || 0;
-    if (!income || !rate) {
-      taxEstimated.textContent = "₹0";
-      taxEffectiveRate.textContent = "0%";
-      return;
-    }
-    const tax = (income * rate) / 100;
-    const effective = (tax / income) * 100;
-    taxEstimated.textContent = `₹${tax.toFixed(0)}`;
-    taxEffectiveRate.textContent = `${effective.toFixed(1)}%`;
-  }
-
-      // Electricity estimate (older style)
+      // Electricity estimate
       (function () {
         const unitsInput = document.getElementById(
           "electricityUnits"
@@ -3230,34 +3390,47 @@
         update();
       })();
 
-      // Unit converter (older correct constants)
+      // Unit converter
       (function () {
-  const valueInput = document.getElementById("unitValue");
-  const typeSelect = document.getElementById("unitType");
-  const resultOutput = document.getElementById("unitResult");
+        const valueInput = document.getElementById("unitValue");
+        const typeSelect = document.getElementById("unitType");
+        const resultOutput = document.getElementById("unitResult");
 
-  function calculate() {
-    const value = Number(valueInput.value) || 0;
-    const type = typeSelect.value;
-    let result;
-    switch (type) {
-      case "kmToMiles": result = value * 0.621371; break;
-      case "milesToKm": result = value / 0.621371; break;
-      case "kgToLbs": result = value * 2.20462; break;
-      case "lbsToKg": result = value / 2.20462; break;
-      case "cToF": result = value * 1.8 + 32; break;
-      case "fToC": result = (value - 32) / 1.8; break;
-      default: result = 0;
-    }
-    resultOutput.textContent = result ? result.toFixed(4) : "–";
-  }
+        function calculate() {
+          const value = Number(valueInput.value) || 0;
+          const type = typeSelect.value;
+          let result;
+          switch (type) {
+            case "kmToMiles":
+              result = value * 0.621371;
+              break;
+            case "milesToKm":
+              result = value / 0.621371;
+              break;
+            case "kgToLbs":
+              result = value * 2.20462;
+              break;
+            case "lbsToKg":
+              result = value / 2.20462;
+              break;
+            case "cToF":
+              result = value * 1.8 + 32;
+              break;
+            case "fToC":
+              result = (value - 32) / 1.8;
+              break;
+            default:
+              result = 0;
+          }
+          resultOutput.textContent = result ? result.toFixed(4) : "–";
+        }
 
-  valueInput.addEventListener("input", calculate);
-  typeSelect.addEventListener("change", calculate);
-  calculate();
-})();
+        valueInput.addEventListener("input", calculate);
+        typeSelect.addEventListener("change", calculate);
+        calculate();
+      })();
 
-      // BMI calculator (older logic)
+      // BMI calculator
       (function () {
         const heightInput = document.getElementById("bmiHeight");
         const weightInput = document.getElementById("bmiWeight");
@@ -3293,7 +3466,7 @@
         update();
       })();
 
-      // JSON Formatter (older logic)
+      // JSON Formatter
       (function () {
         const input = document.getElementById("jsonInput");
         const output = document.getElementById("jsonOutput");
