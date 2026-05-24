@@ -1451,99 +1451,91 @@
               </div>
             </section>
 
-            <!-- Currency Panel -->
-            <section
-              class="panel tool-panel"
-              data-tool="currency"
-              aria-label="Currency converter"
-            >
-              <header class="panel-header">
-                <div>
-                  <h2
-                    class="panel-title"
-                    id="currency-panel-title"
-                  >
-                    Currency Converter
-                  </h2>
-                  <p class="panel-subtitle">
-                    Convert between currencies instantly using your chosen
-                    rate.
-                  </p>
-                  <p class="panel-tagline">
-                    Handy for quick estimates while travelling or making online
-                    payments.
-                  </p>
-                </div>
-              </header>
+         <!-- Currency Panel (from older version) -->
+<section class="panel tool-panel" data-tool="currency" aria-label="Currency converter">
+  <header class="panel-header">
+    <div>
+      <h2 class="panel-title" id="currency-panel-title">Currency Converter</h2>
+      <p class="panel-subtitle">
+        Convert between major currencies using live daily exchange rates from a free API.
+      </p>
+      <p class="panel-tagline">
+        Handy for quick estimates while travelling or making online payments.
+      </p>
+    </div>
+  </header>
 
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-label-row">
-                    <label
-                      for="currencyAmount"
-                      class="field-label"
-                    >
-                      Amount
-                    </label>
-                  </div>
-                  <div class="input-wrap">
-                    <input
-                      id="currencyAmount"
-                      type="number"
-                      class="input"
-                      min="0"
-                      step="0.01"
-                      value="1000"
-                    />
-                  </div>
+  <div class="field-grid">
+    <div class="field">
+      <div class="field-label-row">
+        <label for="currencyAmount" class="field-label">Amount</label>
+        <span class="field-helper">Enter the amount to convert</span>
+      </div>
+      <div class="input-wrap">
+        <input
+          id="currencyAmount"
+          class="input"
+          type="number"
+          min="0"
+          step="0.01"
+          value="100"
+        />
+      </div>
+    </div>
 
-                  <div class="field-label-row">
-                    <label
-                      for="currencyRate"
-                      class="field-label"
-                    >
-                      Conversion rate
-                    </label>
-                    <span class="field-helper">Target per base</span>
-                  </div>
-                  <div class="input-wrap">
-                    <input
-                      id="currencyRate"
-                      type="number"
-                      class="input"
-                      min="0"
-                      step="0.0001"
-                      value="0.012"
-                    />
-                  </div>
-                </div>
+    <div class="field">
+      <div class="field-label-row">
+        <label for="currencyFrom" class="field-label">From</label>
+        <span class="field-helper">Base currency</span>
+      </div>
+      <div class="input-wrap">
+        <select id="currencyFrom" class="select"></select>
+      </div>
 
-                <div class="summary-panel">
-                  <h3 class="summary-heading">Converted amount</h3>
-                  <div class="summary-cards">
-                    <article class="summary-card accent">
-                      <div class="summary-label">Result</div>
-                      <p
-                        id="currencyResult"
-                        class="summary-value"
-                      ></p>
-                      <p class="summary-note">
-                        Shows your amount converted at the rate you entered.
-                      </p>
-                    </article>
-                    <article class="summary-card">
-                      <div class="summary-label">Tip</div>
-                      <p class="summary-value">Use real-time rates</p>
-                      <p class="summary-note">
-                        For critical decisions, confirm with live currency data
-                        from your bank or exchange.
-                      </p>
-                    </article>
-                  </div>
-                </div>
-              </div>
-            </section>
+      <div class="field-label-row" style="margin-top: var(--space-3);">
+        <label for="currencyTo" class="field-label">To</label>
+        <span class="field-helper">Target currency</span>
+      </div>
+      <div class="input-wrap">
+        <select id="currencyTo" class="select"></select>
+      </div>
+    </div>
+  </div>
 
+  <div class="summary-panel" style="margin-top: var(--space-4);">
+    <h3 class="summary-heading">Converted amount</h3>
+    <div class="summary-cards">
+      <article class="summary-card accent">
+        <div class="summary-label">Converted amount</div>
+        <p id="currencyConverted" class="summary-value">Loading…</p>
+        <p class="summary-note">
+          Calculated using the latest available daily exchange rate.
+        </p>
+      </article>
+      <article class="summary-card">
+        <div class="summary-label">Applied rate</div>
+        <p id="currencyRateUsed" class="summary-value">—</p>
+        <p class="summary-note">
+          Live rate from the selected base to target currency.
+        </p>
+      </article>
+      <article class="summary-card">
+        <div class="summary-label">Pair</div>
+        <p id="currencyPair" class="summary-value">—</p>
+        <p class="summary-note">
+          Current conversion pair.
+        </p>
+      </article>
+      <article class="summary-card">
+        <div class="summary-label">Rate date</div>
+        <p id="currencyRateDate" class="summary-value">—</p>
+        <p class="summary-note">
+          Latest working day available from the API.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
             <!-- EMI Panel -->
             <section
               class="panel tool-panel"
@@ -3031,24 +3023,94 @@
         dobInput.addEventListener("change", updateAge);
       })();
 
-      // Currency Converter (current simple logic; mathematically fine)
-      (function () {
-        const amountInput = document.getElementById("currencyAmount");
-        const rateInput = document.getElementById("currencyRate");
-        const resultOutput = document.getElementById("currencyResult");
+      // Currency Converter (from older version with live API)
+(function () {
+  const amountInput = document.getElementById("currencyAmount");
+  const fromSelect = document.getElementById("currencyFrom");
+  const toSelect = document.getElementById("currencyTo");
+  const convertedEl = document.getElementById("currencyConverted");
+  const rateUsedEl = document.getElementById("currencyRateUsed");
+  const pairEl = document.getElementById("currencyPair");
+  const rateDateEl = document.getElementById("currencyRateDate");
 
-        function update() {
-          const amount = Number(amountInput.value) || 0;
-          const rate = Number(rateInput.value) || 0;
-          const result = amount * rate;
-          resultOutput.textContent = result ? result.toFixed(2) : "–";
-        }
+  const API_URL = "https://api.frankfurter.app";
 
-        amountInput.addEventListener("input", update);
-        rateInput.addEventListener("input", update);
-        update();
-      })();
+  async function fetchCurrencies() {
+    try {
+      const res = await fetch(`${API_URL}/currencies`);
+      if (!res.ok) throw new Error("Failed to load currencies");
+      const data = await res.json();
+      const codes = Object.keys(data).sort();
 
+      fromSelect.innerHTML = "";
+      toSelect.innerHTML = "";
+
+      for (const code of codes) {
+        const optionFrom = document.createElement("option");
+        optionFrom.value = code;
+        optionFrom.textContent = `${code} – ${data[code]}`;
+        fromSelect.appendChild(optionFrom);
+
+        const optionTo = document.createElement("option");
+        optionTo.value = code;
+        optionTo.textContent = `${code} – ${data[code]}`;
+        toSelect.appendChild(optionTo);
+      }
+
+      fromSelect.value = "INR";
+      toSelect.value = "USD";
+      updateConversion();
+    } catch (error) {
+      convertedEl.textContent = "Error loading currencies";
+      rateUsedEl.textContent = "—";
+      pairEl.textContent = "—";
+      rateDateEl.textContent = "—";
+    }
+  }
+
+  async function updateConversion() {
+    const amount = Number(amountInput.value) || 0;
+    const from = fromSelect.value;
+    const to = toSelect.value;
+
+    if (!amount || !from || !to || from === to) {
+      convertedEl.textContent = amount
+        ? `${amount.toFixed(2)}`
+        : "0.00";
+      rateUsedEl.textContent = "—";
+      pairEl.textContent = `${from}/${to}`;
+      rateDateEl.textContent = "—";
+      return;
+    }
+
+    try {
+      convertedEl.textContent = "Loading…";
+      const res = await fetch(
+        `${API_URL}/latest?amount=${amount}&from=${from}&to=${to}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch rate");
+      const data = await res.json();
+      const rate = data.rates[to];
+      const result = rate * 1; // amount already applied
+
+      convertedEl.textContent = result.toFixed(2);
+      rateUsedEl.textContent = rate.toFixed(6);
+      pairEl.textContent = `${from}/${to}`;
+      rateDateEl.textContent = data.date || "—";
+    } catch (error) {
+      convertedEl.textContent = "Conversion error";
+      rateUsedEl.textContent = "—";
+      pairEl.textContent = `${from}/${to}`;
+      rateDateEl.textContent = "—";
+    }
+  }
+
+  amountInput.addEventListener("input", updateConversion);
+  fromSelect.addEventListener("change", updateConversion);
+  toSelect.addEventListener("change", updateConversion);
+
+  fetchCurrencies();
+})();
       // EMI Calculator (older-style logic but matches current IDs)
       (function () {
         const amountInput = document.getElementById("loanAmount");
