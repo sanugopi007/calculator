@@ -2447,100 +2447,70 @@
   </div>
             </section>
 
-            <!-- Unit Converter Panel -->
-            <section
-              class="panel tool-panel"
-              data-tool="unit"
-              aria-label="Unit converter"
-            >
-              <header class="panel-header">
-                <div>
-                  <h2
-                    class="panel-title"
-                    id="unit-panel-title"
-                  >
-                    Unit Converter
-                  </h2>
-                  <p class="panel-subtitle">
-                    Convert between common units for length, weight and
-                    temperature.
-                  </p>
-                  <p class="panel-tagline">
-                    Useful for everyday measurements, recipes and quick checks.
-                  </p>
-                </div>
-              </header>
+            <!-- Unit Panel -->
+<section class="panel tool-panel" data-tool="unit" aria-label="Unit converter">
+  <header class="panel-header">
+    <div>
+      <h2 class="panel-title" id="unit-panel-title">Unit Converter</h2>
+      <p class="panel-subtitle">Convert between different units of measurement across multiple categories.</p>
+      <p class="panel-tagline">Includes Indian land measurements like Bigha, Guntha, and Cent.</p>
+    </div>
+  </header>
 
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-label-row">
-                    <label
-                      for="unitValue"
-                      class="field-label"
-                    >
-                      Value
-                    </label>
-                  </div>
-                  <div class="input-wrap">
-                    <input
-                      id="unitValue"
-                      type="number"
-                      class="input"
-                      value="1"
-                      step="0.01"
-                    />
-                  </div>
+  <div class="field-grid">
+    <div class="field">
+      <div class="field-label-row">
+        <label for="unitValue" class="field-label">Value</label>
+      </div>
+      <div class="input-wrap">
+        <input id="unitValue" type="number" class="input" value="1" step="0.01">
+      </div>
+    </div>
 
-                  <div class="field-label-row">
-                    <label
-                      for="unitType"
-                      class="field-label"
-                    >
-                      Conversion type
-                    </label>
-                  </div>
-                  <div class="input-wrap">
-                    <select
-                      id="unitType"
-                      class="select"
-                    >
-                      <option value="kmToMiles">Kilometres → Miles</option>
-                      <option value="milesToKm">Miles → Kilometres</option>
-                      <option value="kgToLbs">Kilograms → Pounds</option>
-                      <option value="lbsToKg">Pounds → Kilograms</option>
-                      <option value="cToF">Celsius → Fahrenheit</option>
-                      <option value="fToC">Fahrenheit → Celsius</option>
-                    </select>
-                  </div>
-                </div>
+    <div class="field">
+      <div class="field-label-row">
+        <label for="unitCategory" class="field-label">Category</label>
+      </div>
+      <div class="input-wrap">
+        <select id="unitCategory" class="select">
+          <!-- Populated by JavaScript -->
+        </select>
+      </div>
+    </div>
 
-                <div class="summary-panel">
-                  <h3 class="summary-heading">Conversion result</h3>
-                  <div class="summary-cards">
-                    <article class="summary-card accent">
-                      <div class="summary-label">Converted value</div>
-                      <p
-                        id="unitResult"
-                        class="summary-value"
-                      ></p>
-                      <p class="summary-note">
-                        Automatically updates when you change the value or
-                        conversion type.
-                      </p>
-                    </article>
-                    <article class="summary-card">
-                      <div class="summary-label">Hint</div>
-                      <p class="summary-value">Check precision needs</p>
-                      <p class="summary-note">
-                        For scientific or engineering work, confirm using more
-                        precise tools if needed.
-                      </p>
-                    </article>
-                  </div>
-                </div>
-              </div>
-            </section>
+    <div class="field">
+      <div class="field-label-row">
+        <label for="unitType" class="field-label">Conversion type</label>
+      </div>
+      <div class="input-wrap">
+        <select id="unitType" class="select">
+          <!-- Populated by JavaScript -->
+        </select>
+      </div>
+    </div>
+  </div>
 
+  <div class="summary-panel">
+    <h3 class="summary-heading">Conversion result</h3>
+    <div class="summary-cards">
+      <article class="summary-card accent">
+        <div class="summary-label">Converted value</div>
+        <p id="unitResult" class="summary-value"></p>
+        <p class="summary-note">Result updates automatically as you change values.</p>
+      </article>
+      
+      <article class="summary-card">
+        <div class="summary-label">Unit labels</div>
+        <p class="summary-value">
+          <span id="unitFromLabel" style="font-size: var(--text-sm);"></span> 
+          → 
+          <span id="unitToLabel" style="font-size: var(--text-sm);"></span>
+        </p>
+        <p class="summary-note">Shows the units being converted between.</p>
+      </article>
+    </div>
+  </div>
+</section>
             <!-- BMI Panel -->
             <section
               class="panel tool-panel"
@@ -3686,46 +3656,196 @@ function calculateTax() {
   updateElectricity();
 })();
 
-      // Unit converter
-      (function () {
-        const valueInput = document.getElementById("unitValue");
-        const typeSelect = document.getElementById("unitType");
-        const resultOutput = document.getElementById("unitResult");
+      // Enhanced Unit converter with categories
+(function () {
+  const categorySelect = document.getElementById("unitCategory");
+  const typeSelect = document.getElementById("unitType");
+  const valueInput = document.getElementById("unitValue");
+  const resultOutput = document.getElementById("unitResult");
+  const fromLabel = document.getElementById("unitFromLabel");
+  const toLabel = document.getElementById("unitToLabel");
 
-        function calculate() {
-          const value = Number(valueInput.value) || 0;
-          const type = typeSelect.value;
-          let result;
-          switch (type) {
-            case "kmToMiles":
-              result = value * 0.621371;
-              break;
-            case "milesToKm":
-              result = value / 0.621371;
-              break;
-            case "kgToLbs":
-              result = value * 2.20462;
-              break;
-            case "lbsToKg":
-              result = value / 2.20462;
-              break;
-            case "cToF":
-              result = value * 1.8 + 32;
-              break;
-            case "fToC":
-              result = (value - 32) / 1.8;
-              break;
-            default:
-              result = 0;
-          }
-          resultOutput.textContent = result ? result.toFixed(4) : "–";
-        }
+  // Organized conversions by category
+  const conversions = {
+    length: {
+      label: "Length & Distance",
+      types: {
+        kmToMiles: { name: "Kilometres → Miles", from: "km", to: "mi", ratio: 0.621371 },
+        milesToKm: { name: "Miles → Kilometres", from: "mi", to: "km", ratio: 1.60934 },
+        mToFt: { name: "Meters → Feet", from: "m", to: "ft", ratio: 3.28084 },
+        ftToM: { name: "Feet → Meters", from: "ft", to: "m", ratio: 0.3048 },
+        cmToInch: { name: "Centimeters → Inches", from: "cm", to: "in", ratio: 0.393701 },
+        inchToCm: { name: "Inches → Centimeters", from: "in", to: "cm", ratio: 2.54 }
+      }
+    },
+    weight: {
+      label: "Weight & Mass",
+      types: {
+        kgToLbs: { name: "Kilograms → Pounds", from: "kg", to: "lbs", ratio: 2.20462 },
+        lbsToKg: { name: "Pounds → Kilograms", from: "lbs", to: "kg", ratio: 0.453592 },
+        gToOz: { name: "Grams → Ounces", from: "g", to: "oz", ratio: 0.035274 },
+        ozToG: { name: "Ounces → Grams", from: "oz", to: "g", ratio: 28.3495 },
+        kgToG: { name: "Kilograms → Grams", from: "kg", to: "g", ratio: 1000 },
+        gToKg: { name: "Grams → Kilograms", from: "g", to: "kg", ratio: 0.001 }
+      }
+    },
+    temperature: {
+      label: "Temperature",
+      types: {
+        cToF: { name: "Celsius → Fahrenheit", from: "°C", to: "°F", formula: "cToF" },
+        fToC: { name: "Fahrenheit → Celsius", from: "°F", to: "°C", formula: "fToC" },
+        cToK: { name: "Celsius → Kelvin", from: "°C", to: "K", formula: "cToK" },
+        kToC: { name: "Kelvin → Celsius", from: "K", to: "°C", formula: "kToC" }
+      }
+    },
+    area: {
+      label: "Area",
+      types: {
+        sqmToSqft: { name: "Square Meters → Square Feet", from: "m²", to: "ft²", ratio: 10.7639 },
+        sqftToSqm: { name: "Square Feet → Square Meters", from: "ft²", to: "m²", ratio: 0.092903 },
+        acresToHectares: { name: "Acres → Hectares", from: "acres", to: "ha", ratio: 0.404686 },
+        hectaresToAcres: { name: "Hectares → Acres", from: "ha", to: "acres", ratio: 2.47105 },
+        bighaToAcres: { name: "Bigha → Acres (UP/Bihar)", from: "bigha", to: "acres", ratio: 0.6198 },
+        acresToBigha: { name: "Acres → Bigha (UP/Bihar)", from: "acres", to: "bigha", ratio: 1.613 },
+        gunthaToSqft: { name: "Guntha → Square Feet", from: "guntha", to: "ft²", ratio: 1089 },
+        sqftToGuntha: { name: "Square Feet → Guntha", from: "ft²", to: "guntha", ratio: 0.000918 },
+        centToSqft: { name: "Cent → Square Feet", from: "cent", to: "ft²", ratio: 435.6 },
+        sqftToCent: { name: "Square Feet → Cent", from: "ft²", to: "cent", ratio: 0.002296 }
+      }
+    },
+    volume: {
+      label: "Volume & Capacity",
+      types: {
+        litersToGallons: { name: "Liters → Gallons (US)", from: "L", to: "gal", ratio: 0.264172 },
+        gallonsToLiters: { name: "Gallons (US) → Liters", from: "gal", to: "L", ratio: 3.78541 },
+        mlToFloz: { name: "Milliliters → Fluid Ounces", from: "ml", to: "fl oz", ratio: 0.033814 },
+        flozToMl: { name: "Fluid Ounces → Milliliters", from: "fl oz", to: "ml", ratio: 29.5735 },
+        cubicmToCubicft: { name: "Cubic Meters → Cubic Feet", from: "m³", to: "ft³", ratio: 35.3147 },
+        cubicftToCubicm: { name: "Cubic Feet → Cubic Meters", from: "ft³", to: "m³", ratio: 0.0283168 }
+      }
+    },
+    data: {
+      label: "Data Storage",
+      types: {
+        mbToGb: { name: "Megabytes → Gigabytes", from: "MB", to: "GB", ratio: 0.001 },
+        gbToMb: { name: "Gigabytes → Megabytes", from: "GB", to: "MB", ratio: 1000 },
+        gbToTb: { name: "Gigabytes → Terabytes", from: "GB", to: "TB", ratio: 0.001 },
+        tbToGb: { name: "Terabytes → Gigabytes", from: "TB", to: "GB", ratio: 1000 },
+        kbToMb: { name: "Kilobytes → Megabytes", from: "KB", to: "MB", ratio: 0.001 },
+        mbToKb: { name: "Megabytes → Kilobytes", from: "MB", to: "KB", ratio: 1000 },
+        mbitsToMbytes: { name: "Megabits → Megabytes", from: "Mbps", to: "MB/s", ratio: 0.125 },
+        mbytesToMbits: { name: "Megabytes → Megabits", from: "MB/s", to: "Mbps", ratio: 8 }
+      }
+    },
+    speed: {
+      label: "Speed",
+      types: {
+        kmhToMph: { name: "km/h → mph", from: "km/h", to: "mph", ratio: 0.621371 },
+        mphToKmh: { name: "mph → km/h", from: "mph", to: "km/h", ratio: 1.60934 },
+        msToFts: { name: "m/s → ft/s", from: "m/s", to: "ft/s", ratio: 3.28084 },
+        ftsToMs: { name: "ft/s → m/s", from: "ft/s", to: "m/s", ratio: 0.3048 },
+        knotsToKmh: { name: "Knots → km/h", from: "knots", to: "km/h", ratio: 1.852 },
+        kmhToKnots: { name: "km/h → Knots", from: "km/h", to: "knots", ratio: 0.539957 }
+      }
+    },
+    time: {
+      label: "Time",
+      types: {
+        hoursToMinutes: { name: "Hours → Minutes", from: "hrs", to: "min", ratio: 60 },
+        minutesToHours: { name: "Minutes → Hours", from: "min", to: "hrs", ratio: 0.0166667 },
+        daysToHours: { name: "Days → Hours", from: "days", to: "hrs", ratio: 24 },
+        hoursToDays: { name: "Hours → Days", from: "hrs", to: "days", ratio: 0.0416667 },
+        weeksToDays: { name: "Weeks → Days", from: "weeks", to: "days", ratio: 7 },
+        daysToWeeks: { name: "Days → Weeks", from: "days", to: "weeks", ratio: 0.142857 }
+      }
+    }
+  };
 
-        valueInput.addEventListener("input", calculate);
-        typeSelect.addEventListener("change", calculate);
-        calculate();
-      })();
+  // Temperature formulas
+  function convertTemperature(value, formula) {
+    switch(formula) {
+      case "cToF": return (value * 9/5) + 32;
+      case "fToC": return (value - 32) * 5/9;
+      case "cToK": return value + 273.15;
+      case "kToC": return value - 273.15;
+      default: return value;
+    }
+  }
 
+  // Populate category dropdown
+  function populateCategories() {
+    categorySelect.innerHTML = "";
+    for (const [key, category] of Object.entries(conversions)) {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = category.label;
+      categorySelect.appendChild(option);
+    }
+  }
+
+  // Populate type dropdown based on selected category
+  function populateTypes() {
+    const category = categorySelect.value;
+    const types = conversions[category].types;
+    
+    typeSelect.innerHTML = "";
+    for (const [key, type] of Object.entries(types)) {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = type.name;
+      typeSelect.appendChild(option);
+    }
+    
+    updateLabels();
+  }
+
+  // Update from/to labels
+  function updateLabels() {
+    const category = categorySelect.value;
+    const typeKey = typeSelect.value;
+    const type = conversions[category].types[typeKey];
+    
+    if (fromLabel && toLabel) {
+      fromLabel.textContent = type.from;
+      toLabel.textContent = type.to;
+    }
+  }
+
+  // Calculate conversion
+  function calculate() {
+    const value = Number(valueInput.value) || 0;
+    const category = categorySelect.value;
+    const typeKey = typeSelect.value;
+    const type = conversions[category].types[typeKey];
+    
+    let result;
+    if (type.formula) {
+      // Temperature conversion
+      result = convertTemperature(value, type.formula);
+    } else {
+      // Ratio-based conversion
+      result = value * type.ratio;
+    }
+    
+    resultOutput.textContent = result.toFixed(4) + " " + type.to;
+  }
+
+  // Initialize
+  populateCategories();
+  populateTypes();
+  calculate();
+
+  // Event listeners
+  categorySelect.addEventListener("change", function() {
+    populateTypes();
+    calculate();
+  });
+  typeSelect.addEventListener("change", function() {
+    updateLabels();
+    calculate();
+  });
+  valueInput.addEventListener("input", calculate);
+})();
       // BMI calculator
       (function () {
         const heightInput = document.getElementById("bmiHeight");
