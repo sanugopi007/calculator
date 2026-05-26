@@ -3420,111 +3420,178 @@
         const monthlyEl = document.getElementById("taxMonthly");
         const regimeEchoEl = document.getElementById("taxRegimeEcho");
 
-        // New regime slab computation – FY 2025-26 / AY 2026-27 and carried forward.[web:5][web:8][web:11][web:17]
-        function computeNewRegimeTax(taxable) {
-          let tax = 0;
+        // New regime slab computation FY 2025-26 AY 2026-27 and carried forward.
+function computeNewRegimeTax(taxable) {
+  let tax = 0;
+  const bands = [
+    { limit: 400000, rate: 0.0 },
+    { limit: 800000, rate: 0.05 },
+    { limit: 1200000, rate: 0.10 },
+    { limit: 1600000, rate: 0.15 },
+    { limit: 2000000, rate: 0.20 },
+    { limit: 2400000, rate: 0.25 },
+    { limit: Infinity, rate: 0.30 },
+  ];
 
-          const bands = [
-            { limit: 400000, rate: 0 },
-            { limit: 800000, rate: 0.05 },
-            { limit: 1200000, rate: 0.10 },
-            { limit: 1600000, rate: 0.15 },
-            { limit: 2000000, rate: 0.20 },
-            { limit: 2400000, rate: 0.25 },
-            { limit: Infinity, rate: 0.30 },
-          ];
+  let prev = 0;
+  for (const band of bands) {
+    if (taxable > prev) {
+      const slabIncome = Math.min(taxable, band.limit) - prev;
+      if (slabIncome > 0) {
+        tax += slabIncome * band.rate;
+      }
+      prev = band.limit;
+    } else {
+      break;
+    }
+  }
+  return tax;
+}
 
-          let prev = 0;
-          for (const band of bands) {
-            if (taxable > prev) {
-              const slabIncome = Math.min(taxable, band.limit) - prev;
-              tax += slabIncome * band.rate;
-              prev = band.limit;
-              if (taxable <= band.limit) break;
-            } else {
-              break;
-            }
-          }
-          return tax;
+// Old regime simplified slabs for resident individual.
+function computeOldRegimeTax(taxable) {
+  let tax = 0;
+  const bands = [
+    { limit: 250000, rate: 0.0 },
+    { limit: 500000, rate: 0.05 },
+    { limit: 1000000, rate: 0.20 },
+    { limit: Infinity, rate: 0.30 },
+  ];
+
+  let prev = 0;
+  for (const band of bands) {
+    if (taxable > prev) {
+      const slabIncome = Math.min(taxable, band.limit) - prev;
+      if (slabIncome > 0) {
+        tax += slabIncome * band.rate;
+      }
+      prev = band.limit;
+    } else {
+      break;
+    }
+  }
+  return tax;
+}
+
+function sanitizeNumber(el) {
+  const v = Number(el.value);
+  return isNaN(v) || v < 0 ? 0 : v;
+}
+
+// Surcharge rate based on total income and regime.
+// FY 2025-26 / AY 2026-27 structure:
+//  - Up to 50L: 0%
+//  - 50L–1Cr:   10%
+//  - 1Cr–2Cr:   15%
+//  - 2Cr–5Cr:   25%
+//  - Above 5Cr: Old regime 37%, New regime 25%.
+function getSurchargeRate(totalIncome, regime) {
+  if (totalIncome <= 5000000) return 0;
+
+  if (totalIncome <= 10000000) return 0.10;
+  if (totalIncome <= 20000000) return 0.15;
+  if (totalIncome <= 50000000) return 0.25;
+
+  return regime === "old" ? 0.37 : 0.25;
+}
+
+// Marginal relief on surcharge at 50L, 1Cr, 2Cr, 5Cr.
+// Ensures: (tax + surcharge) at income I
+// does not exceed (tax at threshold) + (I - threshold).
+function applyMarginalRelief(baseTaxNoSurcharge, baseTaxWithSurcharge, totalIncome, regime) {
+  const thresholds = [5000000, 10000000, 20000000, 50000000];
+
+  let finalTax = baseTaxWithSurcharge;
+
+  for (const threshold of thresholds) {
+    if (totalIncome > threshold) {
+      let taxAtThreshold;
+      if (regime === "new") {
+        const STANDARD_DEDUCTION_NEW = 75000;
+        const taxableAtThreshold = Math.max(0, threshold - STANDARD_DEDUCTION_NEW);
+        let t = computeNewRegimeTax(taxableAtThreshold);
+
+        if (taxableAtThreshold > 0 && taxableAtThreshold <= 1200000) {
+          const rebate = Math.min(60000, t);
+          t = Math.max(0, t - rebate);
         }
 
-        // Old regime simplified slabs for resident individual.[web:4][web:5]
-        function computeOldRegimeTax(taxable) {
-          let tax = 0;
-          const bands = [
-            { limit: 250000, rate: 0 },
-            { limit: 500000, rate: 0.05 },
-            { limit: 1000000, rate: 0.20 },
-            { limit: Infinity, rate: 0.30 },
-          ];
+        taxAtThreshold = t;
+      } else {
+        const taxableAtThreshold = Math.max(0, threshold);
+        let t = computeOldRegimeTax(taxableAtThreshold);
 
-          let prev = 0;
-          for (const band of bands) {
-            if (taxable > prev) {
-              const slabIncome = Math.min(taxable, band.limit) - prev;
-              tax += slabIncome * band.rate;
-              prev = band.limit;
-              if (taxable <= band.limit) break;
-            } else {
-              break;
-            }
-          }
-          return tax;
+        if (taxableAtThreshold > 0 && taxableAtThreshold <= 500000) {
+          const rebate = Math.min(12500, t);
+          t = Math.max(0, t - rebate);
         }
 
-        function sanitizeNumber(el) {
-          const v = Number(el.value);
-          return isNaN(v) || v < 0 ? 0 : v;
-        }
+        taxAtThreshold = t;
+      }
 
-        function calculateTax() {
-          // Treat user input as gross annual income (before deductions).
-          const grossIncome = sanitizeNumber(incomeInput);
-          const extraDeductions = sanitizeNumber(deductionInput);
-          const regime = regimeSelect.value; // "new" or "old"
+      const maxTaxAllowed = taxAtThreshold + (totalIncome - threshold);
+      if (finalTax > maxTaxAllowed) {
+        finalTax = maxTaxAllowed;
+      }
+    }
+  }
 
-          regimeEchoEl.textContent = regime === "new" ? "New" : "Old";
+  return finalTax;
+}
 
-          let taxable = 0;
+// Main calculator: slabs + rebate + surcharge + marginal relief + cess.
+function calculateTax() {
+  const grossIncome = sanitizeNumber(incomeInput);
+  const extraDeductions = sanitizeNumber(deductionInput);
+  const regime = regimeSelect.value; // "new" or "old"
 
-          if (regime === "new") {
-            // New regime – apply flat standard deduction of ₹75,000.[web:5][web:8][web:11][web:17]
-            const STANDARD_DEDUCTION_NEW = 75000;
-            taxable = Math.max(0, grossIncome - STANDARD_DEDUCTION_NEW);
-          } else {
-            // Old regime – allow user-entered deductions (80C, 80D, etc.).[web:4][web:5]
-            taxable = Math.max(0, grossIncome - extraDeductions);
-          }
+  regimeEchoEl.textContent = regime === "new" ? "New" : "Old";
 
-          let tax = 0;
+  let taxable = 0;
+  const STANDARD_DEDUCTION_NEW = 75000;
 
-          if (regime === "new") {
-            tax = computeNewRegimeTax(taxable);
+  if (regime === "new") {
+    taxable = Math.max(0, grossIncome - STANDARD_DEDUCTION_NEW);
+  } else {
+    taxable = Math.max(0, grossIncome - extraDeductions);
+  }
 
-            // 87A rebate in new regime – full rebate (up to ₹60,000) if taxable ≤ ₹12,00,000.[web:5][web:6][web:8][web:11][web:17]
-            if (taxable > 0 && taxable <= 1200000) {
-              const rebate = Math.min(60000, tax);
-              tax = Math.max(0, tax - rebate);
-            }
-          } else {
-            tax = computeOldRegimeTax(taxable);
+  let baseTax = 0;
 
-            // 87A rebate under old regime – taxable ≤ ₹5,00,000.[web:4][web:5]
-            if (taxable > 0 && taxable <= 500000) {
-              const rebate = Math.min(12500, tax); // 5% of 2.5L
-              tax = Math.max(0, tax - rebate);
-            }
-          }
+  if (regime === "new") {
+    baseTax = computeNewRegimeTax(taxable);
 
-          const annualTax = Math.round(tax);
-          const monthlyTax = annualTax / 12;
+    if (taxable > 0 && taxable <= 1200000) {
+      const rebate = Math.min(60000, baseTax);
+      baseTax = Math.max(0, baseTax - rebate);
+    }
+  } else {
+    baseTax = computeOldRegimeTax(taxable);
 
-          estimatedEl.textContent = `₹${annualTax.toLocaleString("en-IN")}`;
-          taxableUsedEl.textContent = `₹${taxable.toLocaleString("en-IN")}`;
-          monthlyEl.textContent = `₹${Math.round(monthlyTax).toLocaleString(
-            "en-IN"
-          )}`;
-        }
+    if (taxable > 0 && taxable <= 500000) {
+      const rebate = Math.min(12500, baseTax);
+      baseTax = Math.max(0, baseTax - rebate);
+    }
+  }
+
+  const surchargeRate = getSurchargeRate(grossIncome, regime);
+  let surcharge = baseTax * surchargeRate;
+
+  let taxWithSurcharge = baseTax + surcharge;
+
+  taxWithSurcharge = applyMarginalRelief(baseTax, taxWithSurcharge, grossIncome, regime);
+
+  const cess = 0.04 * taxWithSurcharge;
+
+  const totalTax = taxWithSurcharge + cess;
+
+  const annualTax = Math.round(totalTax);
+  const monthlyTax = annualTax / 12;
+
+  estimatedEl.textContent = annualTax.toLocaleString("en-IN");
+  taxableUsedEl.textContent = taxable.toLocaleString("en-IN");
+  monthlyEl.textContent = Math.round(monthlyTax).toLocaleString("en-IN");
+}
 
         incomeInput.addEventListener("input", calculateTax);
         regimeSelect.addEventListener("change", calculateTax);
