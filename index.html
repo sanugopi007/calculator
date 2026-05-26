@@ -2369,75 +2369,82 @@
                 </div>
               </header>
 
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-label-row">
-                    <label
-                      for="electricityUnits"
-                      class="field-label"
-                    >
-                      Units consumed (kWh)
-                    </label>
-                  </div>
-                  <div class="input-wrap">
-                    <input
-                      id="electricityUnits"
-                      type="number"
-                      class="input"
-                      value="200"
-                      min="0"
-                      step="1"
-                    />
-                  </div>
+                  <div class="field-grid">
+    <div class="field">
+      <div class="field-label-row">
+        <label for="electricityUnits" class="field-label">
+          Units consumed (kWh)
+        </label>
+      </div>
+      <div class="input-wrap">
+        <input
+          id="electricityUnits"
+          type="number"
+          class="input"
+          value="200"
+          min="0"
+          step="1"
+        />
+      </div>
+    </div>
 
-                  <div class="field-label-row">
-                    <label
-                      for="electricityRate"
-                      class="field-label"
-                    >
-                      Rate per unit
-                    </label>
-                  </div>
-                  <div class="input-wrap">
-                    <span class="input-prefix">₹</span>
-                    <input
-                      id="electricityRate"
-                      type="number"
-                      class="input with-prefix"
-                      value="7"
-                      min="0"
-                      step="0.1"
-                    />
-                  </div>
-                </div>
+    <div class="field">
+      <div class="field-label-row">
+        <label for="electricityRate" class="field-label">
+          Rate per unit
+        </label>
+      </div>
+      <div class="input-wrap">
+        <span class="input-prefix">₹</span>
+        <input
+          id="electricityRate"
+          type="number"
+          class="input with-prefix"
+          value="7"
+          min="0"
+          step="0.1"
+        />
+      </div>
+    </div>
 
-                <div class="summary-panel">
-                  <h3 class="summary-heading">Bill estimate</h3>
-                  <div class="summary-cards">
-                    <article class="summary-card accent">
-                      <div class="summary-label">Estimated bill</div>
-                      <p
-                        id="electricityBill"
-                        class="summary-value"
-                      >
-                        ₹0
-                      </p>
-                      <p class="summary-note">
-                        Straightforward multiplication of units and rate per
-                        unit.
-                      </p>
-                    </article>
-                    <article class="summary-card">
-                      <div class="summary-label">Tip</div>
-                      <p class="summary-value">Check your tariff</p>
-                      <p class="summary-note">
-                        Actual bills include slab rates, taxes and fixed
-                        charges. Use this as a quick approximation.
-                      </p>
-                    </article>
-                  </div>
-                </div>
-              </div>
+    <!-- New field starts here -->
+    <div class="field">
+      <div class="field-label-row">
+        <label for="electricityMode" class="field-label">
+          Billing mode
+        </label>
+      </div>
+      <div class="input-wrap">
+        <select id="electricityMode" class="select">
+          <option value="simple" selected>Simple (units × rate)</option>
+          <option value="kerala">Kerala KSEB slabs</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="summary-panel">
+      <h3 class="summary-heading">Bill estimate</h3>
+      <div class="summary-cards">
+        <article class="summary-card accent">
+          <div class="summary-label">Estimated bill</div>
+          <p id="electricityBill" class="summary-value">
+            ₹0
+          </p>
+          <p class="summary-note">
+            Straightforward multiplication of units and rate per unit.
+          </p>
+        </article>
+        <article class="summary-card">
+          <div class="summary-label">Tip</div>
+          <p class="summary-value">Check your tariff</p>
+          <p class="summary-note">
+            Actual bills include slab rates, taxes and fixed
+            charges. Use this as a quick approximation.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
             </section>
 
             <!-- Unit Converter Panel -->
@@ -3603,26 +3610,88 @@ function calculateTax() {
          
       // Electricity estimate
       (function () {
-        const unitsInput = document.getElementById(
-          "electricityUnits"
-        );
-        const rateInput = document.getElementById(
-          "electricityRate"
-        );
-        const billOutput = document.getElementById(
-          "electricityBill"
-        );
+        const unitsInput = document.getElementById("electricityUnits");
+const rateInput = document.getElementById("electricityRate");
+const billOutput = document.getElementById("electricityBill");
 
-        function update() {
-          const units = Number(unitsInput.value) || 0;
-          const rate = Number(rateInput.value) || 0;
-          const bill = units * rate;
-          billOutput.textContent = `₹${bill.toFixed(0)}`;
-        }
+// Optional: dropdown or toggle for mode, e.g. "simple" or "kerala"
+const electricityModeSelect = document.getElementById("electricityMode"); 
+// If you don't add a select in HTML, you can hardcode mode = "kerala".
 
-        unitsInput.addEventListener("input", update);
-        rateInput.addEventListener("input", update);
-        update();
+// Kerala KSEB domestic slabs (simplified) – FY 2025–27
+// Source: KSEB tariff summaries & 2026 guides. [web:42][web:45][web:48]
+const keralaSlabs = [
+  { upto: 40,  rate: 2.90 },
+  { upto: 80,  rate: 3.50 },
+  { upto: 140, rate: 4.90 },
+  { upto: 180, rate: 6.90 },
+  { upto: 250, rate: 7.45 },
+  { upto: Infinity, rate: 8.00 },
+];
+
+// Very simple fixed + duty assumptions for Kerala.
+// One flat fixed charge and 5% duty on energy + fixed for approximation.
+const KERALA_FIXED_CHARGE = 100;   // ₹/month – approximate. [web:42][web:48]
+const KERALA_DUTY_RATE    = 0.05;  // 5% duty & other charges lumped. [web:42][web:48]
+
+function calculateKeralaBill(units) {
+  if (units <= 0) return 0;
+
+  let remaining = units;
+  let previousLimit = 0;
+  let energyCharge = 0;
+
+  for (const slab of keralaSlabs) {
+    if (remaining <= 0) break;
+
+    const slabUnits =
+      slab.upto === Infinity
+        ? remaining
+        : Math.max(0, Math.min(units, slab.upto) - previousLimit);
+
+    if (slabUnits > 0) {
+      energyCharge += slabUnits * slab.rate;
+      remaining -= slabUnits;
+      previousLimit = slab.upto === Infinity ? previousLimit + slabUnits : slab.upto;
+    }
+  }
+
+  const fixedCharge = KERALA_FIXED_CHARGE;
+  const subTotal = energyCharge + fixedCharge;
+  const duty = subTotal * KERALA_DUTY_RATE;
+  const total = subTotal + duty;
+
+  return total;
+}
+
+function updateElectricity() {
+  const units = Number(unitsInput.value) || 0;
+  const mode =
+    electricityModeSelect && electricityModeSelect.value
+      ? electricityModeSelect.value
+      : "simple"; // fallback if you don't add a select
+
+  let bill = 0;
+
+  if (mode === "kerala") {
+    bill = calculateKeralaBill(units);
+  } else {
+    // Simple generic mode: units * user-entered rate
+    const rate = Number(rateInput.value) || 0;
+    bill = units * rate;
+  }
+
+  billOutput.textContent = bill.toFixed(0);
+}
+
+unitsInput.addEventListener("input", updateElectricity);
+rateInput.addEventListener("input", updateElectricity);
+if (electricityModeSelect) {
+  electricityModeSelect.addEventListener("change", updateElectricity);
+}
+
+// Initial run with default values.
+updateElectricity();
       })();
 
       // Unit converter
