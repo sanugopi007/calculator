@@ -2828,6 +2828,15 @@ const trackEmiCalculation = debounce((loanAmount, interestRate, loanTenure) => {
   });
 }, 1000);
 
+     const trackTaxCalculation = debounce((annualIncome, regime, deductions) => {
+  trackEvent('tool_calculation', {
+    tool_name: 'tax',
+    annual_income: annualIncome,
+    regime: regime,
+    deductions: deductions
+  });
+}, 1000);
+
       // Tool switching
       (function () {
         const pills = document.querySelectorAll(".tool-pill");
@@ -3611,6 +3620,7 @@ function calculateTax() {
   estimatedEl.textContent = annualTax.toLocaleString("en-IN");
   taxableUsedEl.textContent = taxable.toLocaleString("en-IN");
   monthlyEl.textContent = Math.round(monthlyTax).toLocaleString("en-IN");
+ trackTaxCalculation(grossIncome, regime, extraDeductions);
 }
 
         incomeInput.addEventListener("input", calculateTax);
