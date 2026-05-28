@@ -2801,21 +2801,36 @@
         });
       })();
 
+     function trackEvent(eventName, params = {}) {
+  try {
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params);
+    }
+  } catch (err) {
+    console.warn('GA4 tracking skipped:', err);
+  }
+}
+
       // Tool switching
       (function () {
         const pills = document.querySelectorAll(".tool-pill");
         const panels = document.querySelectorAll(".tool-panel");
 
-        function setTool(tool) {
-          pills.forEach((pill) => {
-            const isActive = pill.dataset.toolTarget === tool;
-            pill.dataset.active = String(isActive);
-            pill.setAttribute("aria-pressed", String(isActive));
-          });
-          panels.forEach((panel) => {
-            panel.dataset.active = String(panel.dataset.tool === tool);
-          });
-        }
+         function setTool(tool) {
+  pills.forEach(pill => {
+    const isActive = pill.dataset.toolTarget === tool;
+    pill.dataset.active = String(isActive);
+    pill.setAttribute('aria-pressed', String(isActive));
+  });
+
+  panels.forEach(panel => {
+    panel.dataset.active = String(panel.dataset.tool === tool);
+  });
+
+  trackEvent('tool_selected', {
+    tool_name: tool
+  });
+}
 
         pills.forEach((pill) => {
           pill.addEventListener("click", () => {
