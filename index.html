@@ -2811,6 +2811,23 @@
   }
 }
 
+     function debounce(fn, wait = 1000) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+const trackEmiCalculation = debounce((loanAmount, interestRate, loanTenure) => {
+  trackEvent('tool_calculation', {
+    tool_name: 'emi',
+    loan_amount: loanAmount,
+    interest_rate: interestRate,
+    tenure_years: loanTenure
+  });
+}, 1000);
+
       // Tool switching
       (function () {
         const pills = document.querySelectorAll(".tool-pill");
@@ -3246,7 +3263,9 @@
           monthlyEmi.textContent = `₹${emi.toFixed(0)}`;
           totalInterest.textContent = `₹${interest.toFixed(0)} interest`;
           totalPayment.textContent = `Total payment: ₹${total.toFixed(0)}`;
+         trackEmiCalculation(P, annualRate, years);
         }
+      
 
         sync(amountInput, amountRange);
         sync(rateInput, rateRange);
