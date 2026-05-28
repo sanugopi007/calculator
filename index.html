@@ -2837,6 +2837,15 @@ const trackEmiCalculation = debounce((loanAmount, interestRate, loanTenure) => {
   });
 }, 1000);
 
+     const trackGstCalculation = debounce((amount, rate, gstType) => {
+  trackEvent('tool_calculation', {
+    tool_name: 'gst',
+    amount: amount,
+    gst_rate: rate,
+    gst_type: gstType
+  });
+}, 1000);
+
       // Tool switching
       (function () {
         const pills = document.querySelectorAll(".tool-pill");
@@ -3429,6 +3438,7 @@ const trackEmiCalculation = debounce((loanAmount, interestRate, loanTenure) => {
           gstValue.textContent = `₹${tax.toFixed(2)}`;
           gstNet.textContent = `Net: ₹${net.toFixed(2)}`;
           gstGross.textContent = `Gross: ₹${gross.toFixed(2)}`;
+         trackGstCalculation(amount, rate, typeSelect.value);
         }
 
         amountInput.addEventListener("input", calculate);
